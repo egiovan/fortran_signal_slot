@@ -1,3 +1,9 @@
+!-----------------------------------------------------------------------
+! Simple signal slot Fortran implementation.
+! It is just for didactict purpouse.
+! Edmondo Giovannozzi 2018 License GPL v2.0
+!-----------------------------------------------------------------------
+
 module signal_slot_mod
 implicit none
     private
@@ -23,14 +29,15 @@ implicit none
         procedure(update_slot),pointer,nopass :: update
     end type
 
-	! The signal_t type has an array of slot_t types
-	! plus declare two methods: one for register slots, the second 
-	! to emit a signal.
+    ! The signal_t type has an array of slot_t types
+    ! plus declare two methods: one for register slots, the second 
+    ! to emit a signal.
     type signal_t
         type(slot_t),allocatable :: slots(:)
     contains
-        procedure :: register_slot
+        procedure :: connect
         procedure :: notify_slots
+        procedure :: disconnect_slots
     end type
     
     ! The routine that 
@@ -44,23 +51,36 @@ implicit none
 
 contains
 !-----------------------------------------------------------------------
-    subroutine register_slot(self, observer, update)
+    subroutine connect(self, observer, update)
         class(signal_t),intent(inout) :: self
         class(observer_t), pointer, intent(in) :: observer
         procedure(update_slot) :: update
         
         type(slot_t) :: slot
+
         slot % observer => observer
         slot % update => update
         
+        ! The slots are stored in an allocatable array
+        ! this may not be the most efficient way but it is easy to implement
+        ! at least if one want just to add a slot
+
         if (.not. allocated(self % slots)) allocate(self % slots(0))
         self % slots = [self % slots, slot]
+        
+    end subroutine
+!-----------------------------------------------------------------------
+    subroutine disconnect_slots(self)
+        class(signal_t),intent(inout) :: self
+        if (allocated(self % slots)) deallocate(self % slots)
     end subroutine
 !-----------------------------------------------------------------------
     subroutine notify_slots(self, val)
         class(signal_t),intent(in) :: self
         class(*),intent(in) :: val
+
         integer :: i
+
         if (allocated(self % slots)) then
             do i = 1, size(self % slots)
                 if (associated(self % slots(i) % update)) then

@@ -1,6 +1,12 @@
 module observable_implementation_mod
 use signal_slot_mod
 implicit none
+
+! Simple observable with two signals
+! It  has been decided that the first is a real signal, while the second
+! is an integer one., but actually the code is the same except for 
+! the type of the variable that is passed to the signal.
+ 
     type myobservable_t
         type(signal_t) :: intsignal
         type(signal_t) :: realsignal
