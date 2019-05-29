@@ -1,6 +1,6 @@
 !-----------------------------------------------------------------------
 ! Simple signal slot Fortran implementation.
-! It is just for didactict purpouse.
+! It is just for didactic purpouse.
 ! Edmondo Giovannozzi 2018 License GPL v2.0
 !-----------------------------------------------------------------------
 
@@ -15,7 +15,8 @@ implicit none
     ! One type can declare one or more signal (basically a variable of 
     ! "signal_t" type. 
     ! A signal_t variable permits to register an observer together with
-    ! a "slot": a function that  
+    ! a "slot" where a pointer to an observer and a pointer to function 
+    ! that will be called when the signal is emitted are stored.
     
     ! A type needs to extend observer_t in order to have slots.
     type,abstract :: observer_t
@@ -23,7 +24,8 @@ implicit none
     
     ! The slot_t type has two components: the first a pointer to an observer
     ! The second a pointer to a procedure that will be called when the 
-    ! signal is emitted
+    ! signal is emitted. 
+    ! The slot_t type is private as is not needed by the user
     type slot_t
         class(observer_t),pointer :: observer
         procedure(update_slot),pointer,nopass :: update
@@ -40,7 +42,12 @@ implicit none
         procedure :: disconnect_slots
     end type
     
-    ! The routine that 
+    ! The routine that is called when a signal arrives
+    ! has two arguments the first is the observer and the second a
+    ! class(*) variable.
+    ! the routine has a nopass attribute to avoid a double
+    ! indirection in the update routine simplifying the routine
+    ! for the user. 
     abstract interface
         subroutine update_slot(observer, val)
             import
@@ -51,6 +58,10 @@ implicit none
 
 contains
 !-----------------------------------------------------------------------
+! connect a signal to an observer. The observer is declared as 
+! pointer with an intent in forcing the calling procedure to
+! add to the observer variable the target attribute.
+! This is necessary as we are keeping a ponter to it in the slot
     subroutine connect(self, observer, update)
         class(signal_t),intent(inout) :: self
         class(observer_t), pointer, intent(in) :: observer
