@@ -9,7 +9,7 @@ implicit none
     private
     public observer_t, signal_t
     ! This module implements a signal slot behviour on the same line as the QT.
-    ! this is a compltely independent implementation. It is just a test
+    ! this is a completely independent implementation. It is just a test
     ! for didactic purpouse and is not supporting all the behaviour of QT.
     
     ! One type can declare one or more signal (basically a variable of 
